@@ -7,6 +7,7 @@ from api.services.youtube_client import YouTubeClient
 from api.services.x_client import XClient
 from api.services.tiktok_client import TikTokClient
 from api.services.instagram_client import InstagramClient
+from api.services.facebook_client import FacebookClient
 
 app = FastAPI(
     title="SNS Fetcher API",
@@ -45,18 +46,19 @@ async def health_check():
 
 @app.get("/account/", response_model=AccountInfo, tags=["Account"])
 async def get_account(
-    sns: SNSPlatform = Query(..., description="SNSプラットフォーム (youtube, tiktok, x, instagram)"),
+    sns: SNSPlatform = Query(..., description="SNSプラットフォーム (youtube, tiktok, x, instagram, facebook)"),
     account_id: str = Query(..., description="アカウントID")
 ):
     """
     SNSアカウント情報を取得
 
-    - **sns**: SNSプラットフォーム (youtube, tiktok, x, instagram)
+    - **sns**: SNSプラットフォーム (youtube, tiktok, x, instagram, facebook)
     - **account_id**: アカウントID
       - YouTube: チャンネルハンドル (例: @username)
       - X: ユーザー名 (例: elonmusk)
       - TikTok: ユーザー名 (例: username)
       - Instagram: ユーザー名 (例: username)
+      - Facebook: ページID (例: HokkaidoJerry)
 
     Returns:
         AccountInfo: アカウント情報 (ID, 名前, フォロワー数, フォロー数)
@@ -76,6 +78,10 @@ async def get_account(
 
         elif sns == SNSPlatform.INSTAGRAM:
             client = InstagramClient()
+            return await client.get_account_info(account_id)
+
+        elif sns == SNSPlatform.FACEBOOK:
+            client = FacebookClient()
             return await client.get_account_info(account_id)
 
         else:

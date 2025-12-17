@@ -10,6 +10,7 @@ class SNSPlatform(str, Enum):
     TIKTOK = "tiktok"
     X = "x"
     INSTAGRAM = "instagram"
+    FACEBOOK = "facebook"
 
 
 class AccountInfo(BaseModel):
