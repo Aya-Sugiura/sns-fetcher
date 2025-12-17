@@ -18,6 +18,7 @@ class AccountInfo(BaseModel):
     account_name: str = Field(..., description="アカウント名")
     followers_count: int = Field(..., description="フォロワー数")
     following_count: int = Field(..., description="フォロー数")
+    post_count: Optional[int] = Field(None, description="投稿数（取得可能な場合のみ）")
     sns: SNSPlatform = Field(..., description="SNSプラットフォーム")
 
     class Config:
@@ -27,6 +28,7 @@ class AccountInfo(BaseModel):
                 "account_name": "Example Channel",
                 "followers_count": 10000,
                 "following_count": 500,
+                "post_count": 1500,
                 "sns": "youtube"
             }
         }

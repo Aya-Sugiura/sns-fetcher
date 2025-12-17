@@ -89,26 +89,33 @@ class InstagramClient:
 
                 description = og_description.get('content', '')
 
-                # フォロワー数とフォロー数を抽出
-                # 英語パターン: "XXX Followers, YYY Following"
-                # 日本語パターン: "フォロワーXXX人、フォロー中YYY人"
+                # フォロワー数、フォロー数、投稿数を抽出
+                # 英語パターン: "XXX Followers, YYY Following, ZZZ Posts"
+                # 日本語パターン: "フォロワーXXX人、フォロー中YYY人、投稿ZZZ件"
                 followers_match = re.search(r'([\d,.KM]+)\s+Followers?', description)
                 following_match = re.search(r'([\d,.KM]+)\s+Following', description)
+                posts_match = re.search(r'([\d,.KM]+)\s+Posts?', description)
 
                 # 日本語パターンも試す
                 if not followers_match:
                     followers_match = re.search(r'フォロワー([\d,.KM]+)人', description)
                 if not following_match:
                     following_match = re.search(r'フォロー中([\d,.KM]+)人', description)
+                if not posts_match:
+                    posts_match = re.search(r'投稿([\d,.KM]+)件', description)
 
                 followers_count = 0
                 following_count = 0
+                post_count = None
 
                 if followers_match:
                     followers_count = self._parse_count(followers_match.group(1))
 
                 if following_match:
                     following_count = self._parse_count(following_match.group(1))
+
+                if posts_match:
+                    post_count = self._parse_count(posts_match.group(1))
 
                 # アカウント名を抽出
                 # og:titleから取得
@@ -129,6 +136,7 @@ class InstagramClient:
                     account_name=account_name,
                     followers_count=followers_count,
                     following_count=following_count,
+                    post_count=post_count,
                     sns=SNSPlatform.INSTAGRAM
                 )
 

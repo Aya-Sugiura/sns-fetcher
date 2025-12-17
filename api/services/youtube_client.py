@@ -92,6 +92,7 @@ class YouTubeClient:
 
                 channel_handle = account_id
                 subscriber_count = 0
+                video_count = None
 
                 # metadata_rows[0]: ハンドル名
                 if len(metadata_rows) > 0:
@@ -105,14 +106,24 @@ class YouTubeClient:
                 if len(metadata_rows) > 1:
                     parts = metadata_rows[1].get('metadataParts', [])
                     if parts:
+                        # parts[0]: 登録者数
                         subscriber_text = parts[0].get('text', {}).get('content', '')
                         subscriber_count = self._parse_subscriber_count(subscriber_text)
+
+                        # parts[1]: 動画数
+                        if len(parts) > 1:
+                            video_text = parts[1].get('text', {}).get('content', '')
+                            # "1500 本の動画" や "1,500 videos" などから数値を抽出
+                            video_match = re.search(r'([\d,]+)', video_text)
+                            if video_match:
+                                video_count = int(video_match.group(1).replace(',', ''))
 
                 return AccountInfo(
                     account_id=channel_handle,
                     account_name=channel_name,
                     followers_count=subscriber_count,
                     following_count=0,  # YouTubeにはフォロー数の概念がない
+                    post_count=video_count,
                     sns=SNSPlatform.YOUTUBE
                 )
 

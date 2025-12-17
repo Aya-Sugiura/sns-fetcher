@@ -64,6 +64,7 @@ class TikTokClient:
                     account_name=user.get('nickname', ''),
                     followers_count=stats.get('followerCount', 0),
                     following_count=stats.get('followingCount', 0),
+                    post_count=stats.get('videoCount'),
                     sns=SNSPlatform.TIKTOK
                 )
 
