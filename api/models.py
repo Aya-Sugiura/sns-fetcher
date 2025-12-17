@@ -8,7 +8,6 @@ class SNSPlatform(str, Enum):
     """対応SNSプラットフォーム"""
     YOUTUBE = "youtube"
     TIKTOK = "tiktok"
-    X = "x"
     INSTAGRAM = "instagram"
     FACEBOOK = "facebook"
 

@@ -4,7 +4,6 @@ from datetime import datetime
 
 from api.models import HealthCheck, AccountInfo, SNSPlatform
 from api.services.youtube_client import YouTubeClient
-from api.services.x_client import XClient
 from api.services.tiktok_client import TikTokClient
 from api.services.instagram_client import InstagramClient
 from api.services.facebook_client import FacebookClient
@@ -46,16 +45,15 @@ async def health_check():
 
 @app.get("/account/", response_model=AccountInfo, tags=["Account"])
 async def get_account(
-    sns: SNSPlatform = Query(..., description="SNSプラットフォーム (youtube, tiktok, x, instagram, facebook)"),
+    sns: SNSPlatform = Query(..., description="SNSプラットフォーム (youtube, tiktok, instagram, facebook)"),
     account_id: str = Query(..., description="アカウントID")
 ):
     """
     SNSアカウント情報を取得
 
-    - **sns**: SNSプラットフォーム (youtube, tiktok, x, instagram, facebook)
+    - **sns**: SNSプラットフォーム (youtube, tiktok, instagram, facebook)
     - **account_id**: アカウントID
       - YouTube: チャンネルハンドル (例: @username)
-      - X: ユーザー名 (例: elonmusk)
       - TikTok: ユーザー名 (例: username)
       - Instagram: ユーザー名 (例: username)
       - Facebook: ページID (例: HokkaidoJerry)
@@ -66,10 +64,6 @@ async def get_account(
     try:
         if sns == SNSPlatform.YOUTUBE:
             client = YouTubeClient()
-            return await client.get_account_info(account_id)
-
-        elif sns == SNSPlatform.X:
-            client = XClient()
             return await client.get_account_info(account_id)
 
         elif sns == SNSPlatform.TIKTOK:
