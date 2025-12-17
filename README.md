@@ -4,7 +4,7 @@ FastAPIを使用したSNSデータ取得・管理APIです。
 
 ## 機能
 
-- SNSアカウント情報の取得（YouTube, TikTok, X）
+- SNSアカウント情報の取得（YouTube, TikTok, X, Instagram）
 - アカウントID、名前、フォロワー数、フォロー数の取得
 - RESTful API設計
 - 自動生成されるAPI ドキュメント
@@ -103,6 +103,12 @@ curl "http://localhost:8000/account/?sns=x&account_id=elonmusk"
 curl "http://localhost:8000/account/?sns=tiktok&account_id=ay_an21"
 ```
 
+### Instagramアカウント情報を取得
+
+```bash
+curl "http://localhost:8000/account/?sns=instagram&account_id=harumi_gram"
+```
+
 ### レスポンス例
 
 YouTubeの例：
@@ -127,6 +133,17 @@ TikTokの例：
 }
 ```
 
+Instagramの例：
+```json
+{
+  "account_id": "harumi_gram",
+  "account_name": "栗原はるみ / Harumi Kurihara",
+  "followers_count": 831000,
+  "following_count": 1,
+  "sns": "instagram"
+}
+```
+
 ## プロジェクト構造
 
 ```
@@ -141,7 +158,8 @@ sns-fetcher/
 │       ├── __init__.py
 │       ├── youtube_client.py
 │       ├── x_client.py
-│       └── tiktok_client.py
+│       ├── tiktok_client.py
+│       └── instagram_client.py
 ├── setup.sh                 # セットアップスクリプト
 ├── start.sh                 # 起動スクリプト
 ├── requirements.txt         # 依存パッケージ
@@ -167,13 +185,18 @@ sns-fetcher/
 - ユーザー名で検索
 - 取得情報: ユーザー名、表示名、フォロワー数、フォロー数
 
+### Instagram
+- Webスクレイピングを使用（APIトークン不要）
+- ユーザー名で検索
+- 取得情報: ユーザー名、表示名、フォロワー数、フォロー数
+
 ## 開発について
 
 ### 現在の状態
 
-- YouTube, X, TikTokの3つのSNSに対応
-- YouTube, TikTokはWebスクレイピング、XはAPIを使用
-- XのAPI認証にはBearer Tokenが必要（YouTube, TikTokは不要）
+- YouTube, X, TikTok, Instagramの4つのSNSに対応
+- YouTube, TikTok, InstagramはWebスクレイピング、XはAPIを使用
+- XのAPI認証にはBearer Tokenが必要（他は不要）
 
 ### Google Cloudへのデプロイ
 
@@ -187,8 +210,7 @@ SQLiteはファイルベースのため、Cloud Runなどのステートレス�
 
 ## 今後の拡張予定
 
-- [x] 実際のSNS API連携（YouTube, X, TikTok）
-- [ ] Instagram API連携
+- [x] SNS対応（YouTube, X, TikTok, Instagram）
 - [ ] データベース統合（取得データの保存）
 - [ ] 認証・認可機能（APIキー認証）
 - [ ] キャッシュ機能（レート制限対策）
