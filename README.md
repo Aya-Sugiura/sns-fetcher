@@ -4,8 +4,8 @@ FastAPIを使用したSNSデータ取得・管理APIです。
 
 ## 機能
 
-- SNS投稿データのCRUD操作
-- プラットフォームごとのフィルタリング
+- SNSアカウント情報の取得（YouTube, TikTok, X）
+- アカウントID、名前、フォロワー数、フォロー数の取得
 - RESTful API設計
 - 自動生成されるAPI ドキュメント
 
@@ -40,7 +40,21 @@ source venv/bin/activate  # Windowsの場合: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-#### 3. サーバーの起動
+#### 3. 環境変数の設定
+
+`.env` ファイルを作成し、使用するSNS APIのキーを設定します。
+
+- **YouTube Data API v3**: [Google Cloud Console](https://console.cloud.google.com/apis/credentials) でAPIキーを取得
+- **X (Twitter) API v2**: [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard) でBearer Tokenを取得
+- **TikTok**: APIキー不要（Webスクレイピング）
+
+`.env`ファイルの例：
+```
+YOUTUBE_API_KEY=your_youtube_api_key_here
+X_BEARER_TOKEN=your_x_bearer_token_here
+```
+
+#### 4. サーバーの起動
 
 ```bash
 uvicorn api.main:app --reload
@@ -59,39 +73,47 @@ uvicorn api.main:app --reload
 
 - `GET /health` - サーバーの状態を確認
 
-### 投稿管理
+### アカウント情報取得
 
-- `GET /posts` - 投稿一覧を取得（クエリパラメータ `platform` でフィルタリング可能）
-- `GET /posts/{post_id}` - 特定の投稿を取得
-- `POST /posts` - 新しい投稿を作成
-- `PUT /posts/{post_id}` - 投稿を更新
-- `DELETE /posts/{post_id}` - 投稿を削除
+- `GET /account/` - SNSアカウント情報を取得
+  - クエリパラメータ:
+    - `sns`: SNSプラットフォーム (`youtube`, `tiktok`, `x`)
+    - `account_id`: アカウントID
 
 ## 使用例
 
-### 投稿を作成
+### YouTubeチャンネル情報を取得
 
 ```bash
-curl -X POST "http://localhost:8000/posts" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "platform": "twitter",
-    "content": "Hello World!",
-    "author": "user123",
-    "url": "https://twitter.com/user123/status/123456"
-  }'
+# チャンネルIDを使用
+curl "http://localhost:8000/account/?sns=youtube&account_id=UC_x5XG1OV2P6uZZ5FSM9Ttw"
+
+# カスタムURLを使用
+curl "http://localhost:8000/account/?sns=youtube&account_id=@GoogleDevelopers"
 ```
 
-### 投稿一覧を取得
+### Xアカウント情報を取得
 
 ```bash
-curl "http://localhost:8000/posts"
+curl "http://localhost:8000/account/?sns=x&account_id=elonmusk"
 ```
 
-### プラットフォームでフィルタリング
+### TikTokアカウント情報を取得
 
 ```bash
-curl "http://localhost:8000/posts?platform=twitter"
+curl "http://localhost:8000/account/?sns=tiktok&account_id=username"
+```
+
+### レスポンス例
+
+```json
+{
+  "account_id": "UC_x5XG1OV2P6uZZ5FSM9Ttw",
+  "account_name": "Google for Developers",
+  "followers_count": 2340000,
+  "following_count": 0,
+  "sns": "youtube"
+}
 ```
 
 ## プロジェクト構造
@@ -100,22 +122,47 @@ curl "http://localhost:8000/posts?platform=twitter"
 sns-fetcher/
 ├── api/
 │   ├── __init__.py
-│   ├── main.py          # メインアプリケーション
-│   ├── models.py        # データモデル
-│   └── routers/         # 将来のルーター分割用
-├── setup.sh             # セットアップスクリプト
-├── start.sh             # 起動スクリプト
-├── requirements.txt     # 依存パッケージ
+│   ├── main.py              # メインアプリケーション
+│   ├── models.py            # データモデル
+│   ├── config.py            # 設定管理
+│   ├── routers/             # 将来のルーター分割用
+│   └── services/            # SNS APIクライアント
+│       ├── __init__.py
+│       ├── youtube_client.py
+│       ├── x_client.py
+│       └── tiktok_client.py
+├── setup.sh                 # セットアップスクリプト
+├── start.sh                 # 起動スクリプト
+├── requirements.txt         # 依存パッケージ
+├── .env.example             # 環境変数テンプレート
 ├── .gitignore
 └── README.md
 ```
+
+## 対応SNS
+
+### YouTube
+- YouTube Data API v3を使用
+- チャンネルID またはカスタムURL（@username）で検索可能
+- 取得情報: チャンネルID、チャンネル名、登録者数
+
+### X (Twitter)
+- X API v2を使用
+- ユーザー名で検索
+- 取得情報: ユーザー名、表示名、フォロワー数、フォロー数
+
+### TikTok
+- Webスクレイピングを使用（APIトークン不要）
+- ユーザー名で検索
+- 取得情報: ユーザー名、表示名、フォロワー数、フォロー数
 
 ## 開発について
 
 ### 現在の状態
 
-- データはメモリ上で管理（サーバー再起動でリセット）
-- 将来的にはデータベース連携を追加予定
+- YouTube, X, TikTokの3つのSNSに対応
+- YouTube, XはAPIを使用、TikTokはWebスクレイピングを使用
+- YouTube, XのAPI認証には各プラットフォームのトークンが必要
 
 ### Google Cloudへのデプロイ
 
@@ -129,9 +176,11 @@ SQLiteはファイルベースのため、Cloud Runなどのステートレス�
 
 ## 今後の拡張予定
 
-- [ ] データベース統合 (Cloud SQL)
-- [ ] 認証・認可機能
-- [ ] 実際のSNS API連携（Twitter, Instagram等）
-- [ ] キャッシュ機能
-- [ ] ページネーション
+- [x] 実際のSNS API連携（YouTube, X, TikTok）
+- [ ] Instagram API連携
+- [ ] データベース統合（取得データの保存）
+- [ ] 認証・認可機能（APIキー認証）
+- [ ] キャッシュ機能（レート制限対策）
+- [ ] エラーハンドリングの改善
 - [ ] テスト追加
+- [ ] ロギング機能
