@@ -40,17 +40,16 @@ source venv/bin/activate  # Windowsの場合: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-#### 3. 環境変数の設定
+#### 3. 環境変数の設定（Xを使用する場合のみ）
 
-`.env` ファイルを作成し、使用するSNS APIのキーを設定します。
+Xを使用する場合のみ、`.env` ファイルを作成してBearer Tokenを設定します。
 
-- **YouTube Data API v3**: [Google Cloud Console](https://console.cloud.google.com/apis/credentials) でAPIキーを取得
+- **YouTube**: APIキー不要（Webスクレイピング）
 - **X (Twitter) API v2**: [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard) でBearer Tokenを取得
 - **TikTok**: APIキー不要（Webスクレイピング）
 
 `.env`ファイルの例：
 ```
-YOUTUBE_API_KEY=your_youtube_api_key_here
 X_BEARER_TOKEN=your_x_bearer_token_here
 ```
 
@@ -85,11 +84,11 @@ uvicorn api.main:app --reload
 ### YouTubeチャンネル情報を取得
 
 ```bash
-# チャンネルIDを使用
-curl "http://localhost:8000/account/?sns=youtube&account_id=UC_x5XG1OV2P6uZZ5FSM9Ttw"
+# チャンネルハンドルを使用
+curl "http://localhost:8000/account/?sns=youtube&account_id=@tenuguisyatyou"
 
-# カスタムURLを使用
-curl "http://localhost:8000/account/?sns=youtube&account_id=@GoogleDevelopers"
+# ハンドル名（@なしでもOK）
+curl "http://localhost:8000/account/?sns=youtube&account_id=tenuguisyatyou"
 ```
 
 ### Xアカウント情報を取得
@@ -101,18 +100,30 @@ curl "http://localhost:8000/account/?sns=x&account_id=elonmusk"
 ### TikTokアカウント情報を取得
 
 ```bash
-curl "http://localhost:8000/account/?sns=tiktok&account_id=username"
+curl "http://localhost:8000/account/?sns=tiktok&account_id=ay_an21"
 ```
 
 ### レスポンス例
 
+YouTubeの例：
 ```json
 {
-  "account_id": "UC_x5XG1OV2P6uZZ5FSM9Ttw",
-  "account_name": "Google for Developers",
-  "followers_count": 2340000,
+  "account_id": "@tenuguisyatyou",
+  "account_name": "ショウヘイ🇯🇵てぬぐいしゃちょー",
+  "followers_count": 110000,
   "following_count": 0,
   "sns": "youtube"
+}
+```
+
+TikTokの例：
+```json
+{
+  "account_id": "ay_an21",
+  "account_name": "ちゃぷちぇ",
+  "followers_count": 215,
+  "following_count": 23,
+  "sns": "tiktok"
 }
 ```
 
@@ -142,9 +153,9 @@ sns-fetcher/
 ## 対応SNS
 
 ### YouTube
-- YouTube Data API v3を使用
-- チャンネルID またはカスタムURL（@username）で検索可能
-- 取得情報: チャンネルID、チャンネル名、登録者数
+- Webスクレイピングを使用（APIキー不要）
+- チャンネルハンドル（@username）またはチャンネルIDで検索可能
+- 取得情報: チャンネルハンドル、チャンネル名、登録者数
 
 ### X (Twitter)
 - X API v2を使用
@@ -161,8 +172,8 @@ sns-fetcher/
 ### 現在の状態
 
 - YouTube, X, TikTokの3つのSNSに対応
-- YouTube, XはAPIを使用、TikTokはWebスクレイピングを使用
-- YouTube, XのAPI認証には各プラットフォームのトークンが必要
+- YouTube, TikTokはWebスクレイピング、XはAPIを使用
+- XのAPI認証にはBearer Tokenが必要（YouTube, TikTokは不要）
 
 ### Google Cloudへのデプロイ
 
